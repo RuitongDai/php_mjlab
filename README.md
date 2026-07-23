@@ -77,9 +77,6 @@ python deploy/parkour/sim2sim/g1_parkour_unitree_mujoco.py \
   --duration 0
 ```
 
-![sim2sim](docs/sim2sim.gif)
-
-
 ## Roadmap
 
 - [ ] Release the training code
