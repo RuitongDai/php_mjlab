@@ -46,7 +46,7 @@ Play
 
 ```bash
 python scripts/play.py \
-  --checkpoint-file logs/rsl_rl/go2_pie/model_4000.pt \
+  --checkpoint-file logs/rsl_rl/go2_pie/model_8000.pt \
   --viewer viser \
   --network-depth-vis \
   --terrain-level 9 \
