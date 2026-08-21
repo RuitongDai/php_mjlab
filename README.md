@@ -1,15 +1,11 @@
-# Parkour_mjlab
+# Parkour MJLab
 
-`parkour_mjlab` is a reinforcement learning project built upon
-[MJLab](https://github.com/mujocolab/mjlab.git), using MuJoCo as its physics
-simulation backend for **G1 Parkour** on the Unitree G1 robot.
+## Overview
 
-MJLab combines [Isaac Lab](https://github.com/isaac-sim/IsaacLab)'s proven API
-with best-in-class [MuJoCo](https://github.com/google-deepmind/mujoco_warp)
-physics to provide lightweight, modular abstractions for reinforcement learning
-robotics research and sim-to-real deployment.
+`parkour_mjlab` is a reinforcement learning codebase built on MJLab for perceptive parkour locomotion with Unitree G1 humanoid and Go2 quadruped robots.
 
 ## Installation
+
 **Conda environment**
 
 ```bash
@@ -24,71 +20,93 @@ sudo apt install -y libyaml-cpp-dev libboost-all-dev libeigen3-dev libspdlog-dev
 
 **Install parkour_mjlab**
 ```bash
-git clone https://github.com/yhx1203/parkour_mjlab.git
+git clone https://github.com/yhx1203/parkour_mjlab
 ```
 
 ```bash
 cd parkour_mjlab
-python -m pip install -e . 
+pip install -e .
 ```
 
+## Tasks
 
-## unitree_mujoco SDK2 sim2sim
+### 🐕 Go2
 
-**Preparation**
+<details>
+<summary><b>PIE</b></summary>
 
-[unitree_sdk2_python](https://github.com/unitreerobotics/unitree_sdk2_python)
+Train
 
 ```bash
-conda activate mjlab
-
-cd ~
-sudo apt install python3-pip
-git clone https://github.com/unitreerobotics/unitree_sdk2_python.git
-cd unitree_sdk2_python
-pip3 install -e .
+python scripts/train.py Unitree-Go2-PIE \
+  --agent.run-name stairs
 ```
 
-
-**Start the Unitree MuJoCo server in the first terminal**
+Play
 
 ```bash
-cd parkour_mjlab
-conda activate mjlab
+python scripts/play.py \
+  --checkpoint-file logs/rsl_rl/go2_pie/model_4000.pt \
+  --viewer viser \
+  --network-depth-vis \
+  --terrain-level 9 \
+  --num-envs 1 \
+  --device cuda:0
+```
 
+Native Sim2Sim
+
+```bash
+python deploy/pie/sim2sim/go2_pie_sim2sim.py \
+  --checkpoint-file logs/rsl_rl/go2_pie/policy.onnx \
+  --provider cpu \
+  --terrain stairs \
+  --joystick \
+  --joystick-type xbox \
+  --show-depth
+```
+
+</details>
+
+
+### 🤖️ G1
+
+<details>
+<summary><b>Parkour SDK2 Sim2Sim</b></summary>
+
+Install
+[`unitree_sdk2_python`](https://github.com/unitreerobotics/unitree_sdk2_python),
+then start the MuJoCo server:
+
+```bash
 python deploy/parkour/sim2sim/unitree_mujoco_parkour_server.py \
-  --show-depth \
-  --domain-id 6 \
-  --interface lo \
-  --duration 0
+  --show-depth --domain-id 6 --interface lo --duration 0
 ```
 
-**Start the ONNX controller in a second terminal**
+In a second terminal, start the controller:
 
 ```bash
-cd parkour_mjlab
-conda activate mjlab
-
 python deploy/parkour/sim2sim/g1_parkour_unitree_mujoco.py \
   --checkpoint-file logs/rsl_rl/g1_parkour/parkour_test/policy.onnx \
-  --domain-id 6 \
-  --interface lo \
-  --cmd-x 0.6 \
-  --duration 0
+  --domain-id 6 --interface lo --cmd-x 0.6 --duration 0
 ```
+
+</details>
 
 ## Roadmap
 
-- [ ] Release the training code
-- [x] Release the sim2sim deployment code (MuJoCo)
-- [ ] Release the sim2real deployment code
-
-
+- [x] Release the Go2 PIE training code
+- [x] Release the Go2 PIE sim2sim deployment code (MuJoCo)
+- [ ] Release the Go2 PIE sim2real deployment code
+- [x] Release the G1 Parkour sim2sim deployment code (MuJoCo + SDK2)
+- [ ] Release the G1 Goal Parkour code
+- [ ] Release the G1 PHP code
+- [ ] Release the G1 AME code
+- [ ] Release the G1 CREF code
 
 ## Acknowledgements
 
-This project builds upon and benefits from the following open-source repositories:
-
-- [mjlab](https://github.com/mujocolab/mjlab)
+- [MJLab](https://github.com/mujocolab/mjlab)
+- [Isaac Lab](https://github.com/isaac-sim/IsaacLab)
 - [unitree_rl_mjlab](https://github.com/unitreerobotics/unitree_rl_mjlab)
 - [unitree_mujoco](https://github.com/unitreerobotics/unitree_mujoco)
