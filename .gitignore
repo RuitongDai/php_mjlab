@@ -10,9 +10,16 @@ __pycache__/
 build/
 dist/
 
-logs/
+logs/*
+!logs/rsl_rl/
+logs/rsl_rl/*
+!logs/rsl_rl/g1_stair/
+logs/rsl_rl/g1_stair/*
+!logs/rsl_rl/g1_stair/stair_test/
+logs/rsl_rl/g1_stair/stair_test/*
 wandb/
 
 *.pt
 *.pth
 *.onnx
+!logs/rsl_rl/g1_stair/stair_test/policy.onnx

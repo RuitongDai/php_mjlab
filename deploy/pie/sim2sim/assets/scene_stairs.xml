@@ -6,7 +6,7 @@
       y=2.4: parallel level-9 route with the same layout
 
     The reference stair geometry follows
-    deploy/parkour/sim2sim/assets/scene_parkour.xml:
+    deploy/stair/sim2sim/assets/scene_stair.xml:
       course width = 2.00 m
       stair tread  = 0.30 m
       stair rise   = 0.12 m
@@ -81,7 +81,7 @@
 
     <!--
       Down staircase: five raised treads, followed by the sixth and final
-      0.12 m descent onto the ground plane, exactly like scene_parkour.xml.
+      0.12 m descent onto the ground plane, exactly like scene_stair.xml.
     -->
     <geom name="stairs_down_step_01" type="box" pos="5.15 0 0.54" size="0.15 1.00 0.06" material="stairs" />
     <geom name="stairs_down_step_02" type="box" pos="5.45 0 0.42" size="0.15 1.00 0.06" material="stairs" />

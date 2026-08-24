@@ -11,7 +11,7 @@ setup(
     # setuptools from treating the XML/mesh directories as Python namespaces.
     include_package_data=False,
     package_data={
-        "deploy.parkour.sim2sim": [
+        "deploy.stair.sim2sim": [
             "assets/unitree_g1/LICENSE",
             "assets/unitree_g1/ASSET_SOURCE.md",
             "assets/unitree_g1/*.xml",

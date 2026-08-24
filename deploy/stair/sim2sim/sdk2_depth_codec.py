@@ -1,4 +1,4 @@
-"""Shared Unitree SDK2 transport contract for G1 Parkour sim-to-sim."""
+"""Shared Unitree SDK2 transport contract for G1 Stair sim-to-sim."""
 
 from __future__ import annotations
 
@@ -15,11 +15,11 @@ import numpy as np
 # is the real-robot default domain.
 TOPIC_LOWCMD = "rt/lowcmd"
 TOPIC_LOWSTATE = "rt/lowstate"
-TOPIC_PARKOUR_DEPTH = "rt/camera/parkour_depth"
-DEPTH_FRAME_ID = "parkour_depth_optical"
+TOPIC_STAIR_DEPTH = "rt/camera/stair_depth"
+DEPTH_FRAME_ID = "stair_depth_optical"
 
 
-# Camera/policy contract from Unitree-G1-Parkour.
+# Camera/policy contract from Unitree-G1-Stair.
 DEPTH_HEIGHT = 48
 DEPTH_WIDTH = 64
 DEPTH_FOVY_DEG = 58.0
@@ -74,7 +74,7 @@ G1_WAIST_DDS_INDICES = (12, 13, 14)
 G1_ARM_DDS_INDICES = tuple(range(15, G1_DDS_NUM_MOTORS))
 
 
-# Exact gains used by the native Parkour runner.  These originate from
+# Exact gains used by the native Stair runner.  These originate from
 # src/assets/robots/unitree_g1/g1_constants.py; metadata-rounded values are not
 # used because they measurably change the closed-loop plant.
 _KP_5020 = 14.25062309787429
@@ -288,7 +288,7 @@ def _decode_sim_time(message: Any) -> float:
 
 
 def decode_depth(message: Any) -> tuple[np.ndarray, float]:
-  """Strictly decode a Parkour optical-Z PointCloud2_ message.
+  """Strictly decode a Stair optical-Z PointCloud2_ message.
 
   Returns ``(depth_z, sim_time_s)``.  The returned image is an owned,
   C-contiguous float32 array with shape ``(48, 64)``.
@@ -353,7 +353,7 @@ _Z_TO_RAY_SCALE.setflags(write=False)
 
 
 def preprocess_depth_z(depth_z: np.ndarray) -> np.ndarray:
-  """Convert optical-Z depth to the normalized Parkour ONNX depth tensor.
+  """Convert optical-Z depth to the normalized Stair ONNX depth tensor.
 
   Optical-Z is converted to Euclidean normalized-ray distance using the same
   pixel-center convention as the native runner.  Zero misses become 0.05 m,
@@ -388,7 +388,7 @@ __all__ = [
   "HOME",
   "KD",
   "KP",
-  "TOPIC_PARKOUR_DEPTH",
+  "TOPIC_STAIR_DEPTH",
   "TOPIC_LOWCMD",
   "TOPIC_LOWSTATE",
   "decode_depth",

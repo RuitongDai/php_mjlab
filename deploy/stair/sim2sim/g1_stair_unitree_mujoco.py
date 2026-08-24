@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the G1 Parkour policy against unitree_mujoco over SDK2 DDS.
+"""Run the G1 Stair policy against unitree_mujoco over SDK2 DDS.
 
 This is a simulation-only controller.  It accepts state and optical-Z depth from
 the companion unitree_mujoco server, runs the recurrent ONNX policy at 50 Hz,
@@ -25,25 +25,25 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:
   sys.path.insert(0, str(REPO_ROOT))
 
-from deploy.parkour.sim2sim.policy_runtime import (  # noqa: E402
+from deploy.stair.sim2sim.policy_runtime import (  # noqa: E402
   ACTION_SCALE,
   ACTUATED_JOINT_NAMES,
   CONTROL_DT,
   DEFAULT_JOINT_POS,
   NUM_ACTIONS,
   OBS_DIM,
-  ParkourOnnxPolicy,
+  StairOnnxPolicy,
   _quat_to_rotation,
   _wrap_to_pi,
   resolve_onnx_path,
 )
-from deploy.parkour.sim2sim.sdk2_depth_codec import (  # noqa: E402
+from deploy.stair.sim2sim.sdk2_depth_codec import (  # noqa: E402
   G1_DDS_MOTOR_INDEX,
   G1_DDS_NUM_MOTORS,
   G1_HOME,
   G1_KD,
   G1_KP,
-  TOPIC_PARKOUR_DEPTH,
+  TOPIC_STAIR_DEPTH,
   TOPIC_LOWCMD,
   TOPIC_LOWSTATE,
   decode_depth,
@@ -312,7 +312,7 @@ class SensorBuffer:
     if self.lowstate is None:
       missing.append(f"{TOPIC_LOWSTATE} ({self.lowstate_error or 'no frame'})")
     if self.depth is None:
-      missing.append(f"{TOPIC_PARKOUR_DEPTH} ({self.depth_error or 'no frame'})")
+      missing.append(f"{TOPIC_STAIR_DEPTH} ({self.depth_error or 'no frame'})")
     return "Missing valid DDS input: " + ", ".join(missing)
 
 
@@ -381,14 +381,14 @@ class Sdk2Transport:
     self.publisher.Init()
     self.lowstate_subscriber = ChannelSubscriber(TOPIC_LOWSTATE, LowState_)
     self.lowstate_subscriber.Init(self._on_lowstate, 10)
-    self.depth_subscriber = ChannelSubscriber(TOPIC_PARKOUR_DEPTH, PointCloud2_)
+    self.depth_subscriber = ChannelSubscriber(TOPIC_STAIR_DEPTH, PointCloud2_)
     self.depth_subscriber.Init(sensors.depth_callback, 4)
 
   def start_publisher(self) -> None:
     if self.thread is not None:
       return
     self.thread = threading.Thread(
-      target=self._publish_loop, name="parkour-lowcmd", daemon=True
+      target=self._publish_loop, name="stair-lowcmd", daemon=True
     )
     self.thread.start()
 
@@ -454,10 +454,10 @@ def _validate_mapping() -> None:
   expected_ids = np.arange(G1_DDS_NUM_MOTORS, dtype=np.int32)
   if not np.array_equal(MODEL_TO_DDS_IDS, expected_ids):
     raise ValueError(
-      f"Parkour model-to-DDS joint mapping is invalid: {MODEL_TO_DDS_IDS.tolist()}."
+      f"Stair model-to-DDS joint mapping is invalid: {MODEL_TO_DDS_IDS.tolist()}."
     )
   if not np.allclose(G1_HOME[MODEL_TO_DDS_IDS], DEFAULT_JOINT_POS, atol=1.0e-7):
-    raise ValueError("SDK2 home pose does not match the Parkour ONNX joint order.")
+    raise ValueError("SDK2 home pose does not match the Stair ONNX joint order.")
   for name, values in (("G1_KP", G1_KP), ("G1_KD", G1_KD)):
     if values.shape != (29,) or not np.all(np.isfinite(values)) or np.any(values <= 0):
       raise ValueError(f"{name} must be a finite positive 29-vector.")
@@ -493,14 +493,14 @@ def _observation(
     )
   ).astype(np.float32)
   if observation.shape != (OBS_DIM,) or not np.all(np.isfinite(observation)):
-    raise FloatingPointError(f"Invalid Parkour observation: {observation}.")
+    raise FloatingPointError(f"Invalid Stair observation: {observation}.")
   return observation
 
 
 def _policy_target(action: np.ndarray) -> np.ndarray:
   action = np.asarray(action, dtype=np.float32)
   if action.shape != (NUM_ACTIONS,) or not np.all(np.isfinite(action)):
-    raise FloatingPointError(f"Invalid Parkour action: {action}.")
+    raise FloatingPointError(f"Invalid Stair action: {action}.")
   target = np.asarray(G1_HOME, dtype=np.float64).copy()
   target[MODEL_TO_DDS_IDS] = (
     DEFAULT_JOINT_POS + ACTION_SCALE.astype(np.float64) * action
@@ -508,13 +508,13 @@ def _policy_target(action: np.ndarray) -> np.ndarray:
   return target
 
 
-def _load_policy(args: argparse.Namespace) -> ParkourOnnxPolicy:
+def _load_policy(args: argparse.Namespace) -> StairOnnxPolicy:
   onnx_path, checkpoint_path = resolve_onnx_path(args.checkpoint_file)
   if checkpoint_path is not None:
     print(f"[WARN] Using sibling ONNX for checkpoint alias: {onnx_path}")
   else:
     print(f"[INFO] Loading ONNX: {onnx_path}")
-  policy = ParkourOnnxPolicy(onnx_path, args.provider)
+  policy = StairOnnxPolicy(onnx_path, args.provider)
   if checkpoint_path is not None:
     exported_run = policy.metadata.get("run_path")
     if exported_run != checkpoint_path.parent.name:
@@ -525,7 +525,7 @@ def _load_policy(args: argparse.Namespace) -> ParkourOnnxPolicy:
   return policy
 
 
-def _validate_only(policy: ParkourOnnxPolicy, args: argparse.Namespace) -> None:
+def _validate_only(policy: StairOnnxPolicy, args: argparse.Namespace) -> None:
   lowstate = LowStateSnapshot(
     received_at=time.monotonic(),
     sim_time=0.0,
@@ -590,7 +590,7 @@ def _stand_warmup(
     time.sleep(min(CONTROL_DT, args.stand_warmup - elapsed))
 
 
-def _run(policy: ParkourOnnxPolicy, args: argparse.Namespace) -> None:
+def _run(policy: StairOnnxPolicy, args: argparse.Namespace) -> None:
   sensors = SensorBuffer()
   command_target = CommandTarget()
   transport = Sdk2Transport(
@@ -602,7 +602,7 @@ def _run(policy: ParkourOnnxPolicy, args: argparse.Namespace) -> None:
   )
   try:
     print(
-      f"[INFO] Waiting for {TOPIC_LOWSTATE} and {TOPIC_PARKOUR_DEPTH} on "
+      f"[INFO] Waiting for {TOPIC_LOWSTATE} and {TOPIC_STAIR_DEPTH} on "
       f"domain={args.domain_id}, interface={args.interface} ..."
     )
     sensors.wait_for_pair(
@@ -624,7 +624,7 @@ def _run(policy: ParkourOnnxPolicy, args: argparse.Namespace) -> None:
     last_sim_time = -math.inf
     previous_depth: DepthSnapshot | None = None
     first_depth_sim_time: float | None = None
-    print("[INFO] Stand warmup complete; starting Parkour policy at 50 Hz.")
+    print("[INFO] Stand warmup complete; starting Stair policy at 50 Hz.")
 
     while args.duration == 0.0 or time.monotonic() - policy_start < args.duration:
       transport.check()
@@ -680,7 +680,7 @@ def _run(policy: ParkourOnnxPolicy, args: argparse.Namespace) -> None:
 
 def parse_args() -> argparse.Namespace:
   parser = argparse.ArgumentParser(
-    description="Unitree SDK2 DDS sim2sim client for G1 Parkour."
+    description="Unitree SDK2 DDS sim2sim client for G1 Stair."
   )
   parser.add_argument("--checkpoint-file", required=True)
   parser.add_argument("--domain-id", type=int, default=DEFAULT_DOMAIN_ID)
@@ -701,7 +701,7 @@ def parse_args() -> argparse.Namespace:
     default=0.0,
     help=(
       "Seconds to interpolate to the home pose before policy control. "
-      "The default starts Parkour immediately because its reset pose is not "
+      "The default starts Stair immediately because its reset pose is not "
       "statically stable in the official plant."
     ),
   )

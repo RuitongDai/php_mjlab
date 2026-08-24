@@ -72,7 +72,7 @@ _PIE_DEPTH_FOVY_RANDOM_RANGE = (
 
 # The manufacturer ranges allow a thigh to rotate into a mechanically valid but
 # unusable inverted-leg branch.  Keep the original lower limits and give PIE a
-# generous locomotion/parkour upper limit that excludes that branch.
+# generous locomotion/stair upper limit that excludes that branch.
 _PIE_THIGH_JOINT_RANGES = {
     "FL_thigh_joint": (-1.5708, 2.2),
     "FR_thigh_joint": (-1.5708, 2.2),

@@ -13,7 +13,7 @@ Local changes relative to that upstream revision:
 
 - `g1_29dof.xml` adds the non-colliding, group-3
   `front_depth_camera_visual` shell from the training G1 XML.
-- `scene_parkour.xml` is the generated Parkour course used by this
+- `scene_stair.xml` is the generated Stair course used by this
   project.
 
 The sim2sim server adds the actual `front_depth` camera at runtime; the marker

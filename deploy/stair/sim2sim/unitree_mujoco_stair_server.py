@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Unitree SDK2 MuJoCo server for the G1 Parkour controller."""
+"""Unitree SDK2 MuJoCo server for the G1 Stair controller."""
 
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:
   sys.path.insert(0, str(REPO_ROOT))
 
-from deploy.parkour.sim2sim.sdk2_depth_codec import (  # noqa: E402
+from deploy.stair.sim2sim.sdk2_depth_codec import (  # noqa: E402
   DEPTH_FOVY_DEG,
   DEPTH_HEIGHT,
   DEPTH_MAX_M,
@@ -44,7 +44,7 @@ from deploy.parkour.sim2sim.sdk2_depth_codec import (  # noqa: E402
   G1_HOME,
   G1_KD,
   G1_KP,
-  TOPIC_PARKOUR_DEPTH,
+  TOPIC_STAIR_DEPTH,
   TOPIC_LOWCMD,
   TOPIC_LOWSTATE,
   encode_depth,
@@ -66,7 +66,7 @@ G1_MODE_MACHINE = 5
 
 DEFAULT_SCENE_FILE = (
   Path(__file__).resolve().parent
-  / "assets/unitree_g1/scene_parkour.xml"
+  / "assets/unitree_g1/scene_stair.xml"
 )
 
 # Exact sole collision geometry from src/assets/robots/unitree_g1/xmls/g1.xml.
@@ -196,7 +196,7 @@ def _install_training_foot_collisions(
   spec: mujoco.MjSpec,
   scene_file: Path,
 ) -> None:
-  """Replace each scene foot's contacts with the Parkour training capsules."""
+  """Replace each scene foot's contacts with the Stair training capsules."""
   for side, segments in TRAINING_FOOT_CAPSULE_FROMTO.items():
     body_name = f"{side}_ankle_roll_link"
     foot_body = spec.body(body_name)
@@ -257,7 +257,7 @@ def _validate_training_foot_collisions(model: mujoco.MjModel) -> None:
       )
 
   if len(expected_names) != TRAINING_FOOT_GEOM_COUNT:
-    raise AssertionError("Parkour training foot-collision table is not 14 geoms.")
+    raise AssertionError("Stair training foot-collision table is not 14 geoms.")
 
   geom_ids = np.asarray(
     [
@@ -287,7 +287,7 @@ def _validate_training_foot_collisions(model: mujoco.MjModel) -> None:
   )
   if not contract_matches:
     raise ValueError(
-      "Compiled foot collisions do not match the Parkour training contract."
+      "Compiled foot collisions do not match the Stair training contract."
     )
 
 
@@ -295,7 +295,7 @@ def _install_training_depth_camera_visual(
   spec: mujoco.MjSpec,
   torso: Any,
 ) -> None:
-  """Install the small camera shell from the Parkour training robot."""
+  """Install the small camera shell from the Stair training robot."""
   existing_visual = spec.geom("front_depth_camera_visual")
   if existing_visual is not None:
     spec.delete(existing_visual)
@@ -345,14 +345,14 @@ def _validate_training_depth_camera(model: mujoco.MjModel) -> None:
   )
   if not matches:
     raise ValueError(
-      "Compiled depth camera or visual shell does not match Parkour training."
+      "Compiled depth camera or visual shell does not match Stair training."
     )
 
 
 def build_model(
   scene_file: Path,
 ) -> tuple[mujoco.MjModel, ModelBindings, int]:
-  """Compile a full-body Unitree G1 scene with the Parkour camera."""
+  """Compile a full-body Unitree G1 scene with the Stair camera."""
   if not scene_file.is_file():
     raise FileNotFoundError(f"Unitree MuJoCo scene XML not found: {scene_file}")
   spec = mujoco.MjSpec.from_file(str(scene_file))
@@ -560,7 +560,7 @@ class DdsBridge:
     self._stats = TransportStats()
 
     self._lowstate_publisher = ChannelPublisher(TOPIC_LOWSTATE, LowState_)
-    self._depth_publisher = ChannelPublisher(TOPIC_PARKOUR_DEPTH, PointCloud2_)
+    self._depth_publisher = ChannelPublisher(TOPIC_STAIR_DEPTH, PointCloud2_)
     self._lowcmd_subscriber = ChannelSubscriber(TOPIC_LOWCMD, LowCmd_)
     self._lowstate_publisher.Init()
     self._depth_publisher.Init()
@@ -732,7 +732,7 @@ class DepthCamera:
     self._near_clip = float(model.vis.map.znear * model.stat.extent)
     if not 0.0 < self._near_clip < DEPTH_MIN_M:
       raise ValueError(
-        "Depth near plane must lie below the Parkour clamp: "
+        "Depth near plane must lie below the Stair clamp: "
         f"near={self._near_clip}, clamp={DEPTH_MIN_M}."
       )
     if (
@@ -740,7 +740,7 @@ class DepthCamera:
       or self._far_clip * DEPTH_BACKGROUND_FAR_FRACTION <= DEPTH_MAX_M
     ):
       raise ValueError(
-        "Depth background threshold must exceed the Parkour cutoff: "
+        "Depth background threshold must exceed the Stair cutoff: "
         f"threshold={self._far_clip * DEPTH_BACKGROUND_FAR_FRACTION}, "
         f"cutoff={DEPTH_MAX_M}."
       )
@@ -1074,14 +1074,14 @@ def run(
 
 def parse_args() -> argparse.Namespace:
   parser = argparse.ArgumentParser(
-    description="Official Unitree MuJoCo SDK2 server for G1 Parkour."
+    description="Official Unitree MuJoCo SDK2 server for G1 Stair."
   )
   parser.add_argument(
     "--scene-file",
     default=str(DEFAULT_SCENE_FILE),
     help=(
       "Complete Unitree MuJoCo G1 scene XML. Terrain and assets are loaded "
-      "unchanged; foot contacts are replaced by the Parkour training capsules."
+      "unchanged; foot contacts are replaced by the Stair training capsules."
     ),
   )
   parser.add_argument("--spawn-x", type=float, default=0.0)
