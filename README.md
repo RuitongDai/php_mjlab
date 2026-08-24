@@ -77,6 +77,7 @@ python deploy/pie/sim2sim/go2_pie_sim2sim.py \
 ```bash
 python -m deploy.parkour.sim2sim --gamepad-type xbox --show-depth
 ```
+![parkour](docs/parkour.gif)
 
 手柄控制：
 
