@@ -2,7 +2,7 @@
 
 ## Overview
 
-`parkour_mjlab` is a reinforcement learning codebase built on MJLab for perceptive stair locomotion with Unitree G1 humanoid and Go2 quadruped robots.
+`parkour_mjlab` is a reinforcement learning codebase built on MJLab for perceptive locomotion with Unitree G1 humanoid and Go2 quadruped robots.
 
 ## Installation
 
