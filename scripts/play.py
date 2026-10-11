@@ -1,4 +1,4 @@
-"""Replay a Unitree Go2 PIE checkpoint in MJLab."""
+"""Replay Go2 PIE, or dispatch a Unitree-G1-PHP-* task to the PHP player."""
 
 # ruff: noqa: E402 -- ensure this repository wins over other editable `src` packages.
 
@@ -307,6 +307,11 @@ def run_play(cfg: PlayConfig) -> None:
 
 
 def main() -> None:
+    if len(sys.argv) > 1 and sys.argv[1].startswith("Unitree-G1-PHP-"):
+        from scripts.play_php import main as php_main
+
+        php_main()
+        return
     run_play(tyro.cli(PlayConfig))
 
 

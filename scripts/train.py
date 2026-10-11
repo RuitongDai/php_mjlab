@@ -14,8 +14,9 @@ import tyro
 
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
-if str(_REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(_REPO_ROOT))
+if str(_REPO_ROOT) in sys.path:
+    sys.path.remove(str(_REPO_ROOT))
+sys.path.insert(0, str(_REPO_ROOT))
 
 from mjlab.envs import ManagerBasedRlEnv, ManagerBasedRlEnvCfg
 from mjlab.rl import MjlabOnPolicyRunner, RslRlBaseRunnerCfg, RslRlVecEnvWrapper
@@ -87,6 +88,12 @@ def run_train(task_id: str, cfg: TrainConfig, log_dir: Path) -> None:
         # Check if motion_file is already set (e.g., via CLI --env.commands.motion.motion-file).
         if motion_cmd.motion_file and Path(motion_cmd.motion_file).exists():
             print(f"[INFO] Using local motion file: {motion_cmd.motion_file}")
+
+    # Dataset-aware tasks build the physical box pool after CLI overrides.
+    for command_cfg in cfg.env.commands.values():
+        bind_scene_entities = getattr(command_cfg, "bind_scene_entities", None)
+        if callable(bind_scene_entities):
+            bind_scene_entities(cfg.env.scene)
 
     # Enable NaN guard if requested.
     if cfg.enable_nan_guard:
@@ -170,7 +177,7 @@ def launch_training(task_id: str, args: TrainConfig | None = None):
         os.environ["CUDA_VISIBLE_DEVICES"] = ""
     else:
         os.environ["CUDA_VISIBLE_DEVICES"] = ",".join(map(str, selected_gpus))
-    if args.video:
+    if args.video or task_id.startswith("Unitree-G1-PHP-"):
         os.environ.setdefault("MUJOCO_GL", "egl")
     else:
         os.environ.setdefault("MUJOCO_GL", "disable")
@@ -200,13 +207,15 @@ def launch_training(task_id: str, args: TrainConfig | None = None):
             hostnames=["localhost"],
             workers_per_host=num_gpus,
             backend=None,  # Let rsl_rl handle process group initialization.
-            copy_env_vars=torchrunx.DEFAULT_ENV_VARS_FOR_COPY + ("MUJOCO*",),
+            copy_env_vars=torchrunx.DEFAULT_ENV_VARS_FOR_COPY + ("MUJOCO*", "PHP_ONLY"),
         ).run(run_train, task_id, args, log_dir)
 
 
 def main():
     # Parse first argument to choose the task.
     # Import tasks to populate the registry.
+    if len(sys.argv) > 1 and sys.argv[1].startswith("Unitree-G1-PHP-"):
+        os.environ["PHP_ONLY"] = "1"
     import mjlab.tasks  # noqa: F401
     import src.tasks  # noqa: F401
 

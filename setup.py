@@ -11,6 +11,14 @@ setup(
     # setuptools from treating the XML/mesh directories as Python namespaces.
     include_package_data=False,
     package_data={
+        "deploy.php.sim2sim": ["assets/*.xml", "README.md"],
+        "src.tasks.php": ["README.md"],
+        "src.assets.robots.unitree_g1": [
+            "LICENSE",
+            "xmls/*.xml",
+            "xmls/assets/*.STL",
+            "xmls/assets/*.obj",
+        ],
         "deploy.stair.sim2sim": [
             "assets/unitree_g1/LICENSE",
             "assets/unitree_g1/ASSET_SOURCE.md",
@@ -27,8 +35,11 @@ setup(
         "mjlab==1.2.0",
         "mujoco==3.5.0",
         "mujoco-warp==3.5.0",
+        "warp-lang==1.12.1",
         "numpy",
         "onnxruntime",
+        "onnx",
+        "PyYAML",
         "prettytable",
         "pygame>=2.6",
         "scipy",

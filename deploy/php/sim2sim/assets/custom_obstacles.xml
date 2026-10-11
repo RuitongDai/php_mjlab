@@ -1,0 +1,21 @@
+<mujoco model="PHP custom obstacles">
+  <!-- Static obstacles only: the runner adds the floor and G1 robot.
+       Units: metres. Travel along +X, starting at (0, 0).
+       pos is the box centre; size is HALF the length, width and height.
+       For a box resting on the floor, pos.z = size.z.
+       Edit, duplicate or remove these geoms to build your own course. -->
+  <default>
+    <geom type="box" friction="0.9 0.005 0.0001" condim="3"/>
+  </default>
+  <worldbody>
+    <!-- Full dimensions: 1.2 x 2.0 x 0.2 m -->
+    <geom name="low_step" pos="3.0 0 0.10" size="0.6 1.0 0.10"
+          rgba="0.35 0.65 0.85 1"/>
+    <!-- Full dimensions: 1.2 x 2.0 x 0.4 m -->
+    <geom name="high_step" pos="8.0 0 0.20" size="0.6 1.0 0.20"
+          rgba="0.40 0.75 0.50 1"/>
+    <!-- Full dimensions: 1.5 x 2.0 x 0.75 m -->
+    <geom name="climb" pos="13.0 0 0.375" size="0.75 1.0 0.375"
+          rgba="0.85 0.60 0.30 1"/>
+  </worldbody>
+</mujoco>

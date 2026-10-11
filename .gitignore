@@ -19,7 +19,19 @@ logs/rsl_rl/g1_stair/*
 logs/rsl_rl/g1_stair/stair_test/*
 wandb/
 
+# Local PHP training data; keep setup instructions and dataset READMEs tracked.
+src/assets/motions/php_motion/**/*.npz
+src/assets/motions/php_motion/**/*.npy
+
 *.pt
 *.pth
 *.onnx
 !logs/rsl_rl/g1_stair/stair_test/policy.onnx
+
+# Publish selected PHP checkpoints, while keeping other training outputs local.
+!logs/rsl_rl/g1_php_*_teacher/
+!logs/rsl_rl/g1_php_student/
+logs/rsl_rl/g1_php_*_teacher/*
+logs/rsl_rl/g1_php_student/*
+!logs/rsl_rl/g1_php_*_teacher/model_20000.pt
+!logs/rsl_rl/g1_php_student/model_23000.pt
