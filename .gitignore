@@ -28,10 +28,11 @@ src/assets/motions/php_motion/**/*.npy
 *.onnx
 !logs/rsl_rl/g1_stair/stair_test/policy.onnx
 
-# Publish selected PHP checkpoints, while keeping other training outputs local.
+# Publish selected PHP checkpoints and deployment policy; keep other outputs local.
 !logs/rsl_rl/g1_php_*_teacher/
 !logs/rsl_rl/g1_php_student/
 logs/rsl_rl/g1_php_*_teacher/*
 logs/rsl_rl/g1_php_student/*
 !logs/rsl_rl/g1_php_*_teacher/model_20000.pt
 !logs/rsl_rl/g1_php_student/model_23000.pt
+!logs/rsl_rl/g1_php_student/model_23000.onnx
