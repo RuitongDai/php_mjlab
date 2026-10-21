@@ -1,0 +1,43 @@
+Parkour MJLab
+Copyright 2026 yhx1203
+https://github.com/yhx1203/parkour_mjlab
+
+The project's original code and documentation, and the author-trained PHP and
+PIE checkpoints explicitly listed in logs/LICENSE, are licensed under the Apache
+License, Version 2.0. See LICENSE and logs/LICENSE for scope.
+
+Third-party notices
+===================
+
+PHP (Perceptive Humanoid Parkour)
+https://github.com/amazon-far/php_parkour
+
+This project ports PHP training and deployment to MJLab and uses the upstream
+PHP motion bundles as training inputs. The upstream PHP project is licensed
+under Apache-2.0. Its NOTICE contains the following attribution:
+
+Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+
+The PHP and PIE checkpoints listed in logs/LICENSE were trained by yhx1203.
+The license for those checkpoints does not relicense upstream motion datasets.
+
+Unitree robot assets
+====================
+
+Unitree robot descriptions and meshes are third-party materials and retain
+their applicable upstream terms. The bundled G1 assets carry the BSD 3-Clause
+license and the following copyright notice:
+
+Copyright (c) 2016-2024 HangZhou YuShu TECHNOLOGY CO.,LTD. ("Unitree Robotics")
+All rights reserved.
+
+The full G1 license is retained at:
+  src/assets/robots/unitree_g1/LICENSE
+  deploy/parkour/sim2sim/assets/unitree_g1/LICENSE
+  deploy/stair/sim2sim/assets/unitree_g1/LICENSE
+
+The stair deployment asset provenance is recorded in:
+  deploy/stair/sim2sim/assets/unitree_g1/ASSET_SOURCE.md
+
+Other third-party components, dependencies, and external datasets remain under
+their respective licenses. This notice does not replace or modify those terms.

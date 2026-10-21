@@ -230,3 +230,9 @@ python deploy/stair/sim2sim/g1_stair_unitree_mujoco.py \
 - [unitree_rl_mjlab](https://github.com/unitreerobotics/unitree_rl_mjlab)
 - [unitree_mujoco](https://github.com/unitreerobotics/unitree_mujoco)
 - [php_parkour](https://github.com/amazon-far/php_parkour)
+
+## License
+
+The project's original code, documentation, and the model weights listed in
+[logs/LICENSE](logs/LICENSE) are licensed under [Apache-2.0](LICENSE).
+Third-party materials retain their own licenses; see [NOTICE](NOTICE).
