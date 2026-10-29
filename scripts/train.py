@@ -177,7 +177,7 @@ def launch_training(task_id: str, args: TrainConfig | None = None):
         os.environ["CUDA_VISIBLE_DEVICES"] = ""
     else:
         os.environ["CUDA_VISIBLE_DEVICES"] = ",".join(map(str, selected_gpus))
-    if args.video or task_id.startswith("Unitree-G1-PHP-"):
+    if args.video or task_id.startswith(("Unitree-G1-PHP-", "E1-PHP-")):
         os.environ.setdefault("MUJOCO_GL", "egl")
     else:
         os.environ.setdefault("MUJOCO_GL", "disable")
@@ -214,7 +214,7 @@ def launch_training(task_id: str, args: TrainConfig | None = None):
 def main():
     # Parse first argument to choose the task.
     # Import tasks to populate the registry.
-    if len(sys.argv) > 1 and sys.argv[1].startswith("Unitree-G1-PHP-"):
+    if len(sys.argv) > 1 and sys.argv[1].startswith(("Unitree-G1-PHP-", "E1-PHP-")):
         os.environ["PHP_ONLY"] = "1"
     import mjlab.tasks  # noqa: F401
     import src.tasks  # noqa: F401

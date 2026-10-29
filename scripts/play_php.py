@@ -123,7 +123,10 @@ def main():
     import mjlab.tasks  # noqa: F401
     import src.tasks  # noqa: F401
 
-    tasks = [name for name in list_tasks() if name.startswith("Unitree-G1-PHP-")]
+    tasks = [
+        name for name in list_tasks()
+        if name.startswith(("Unitree-G1-PHP-", "E1-PHP-"))
+    ]
     chosen, remaining = tyro.cli(
         tyro.extras.literal_type_from_choices(tasks),
         add_help=False, return_unknown_args=True, config=mjlab.TYRO_FLAGS,
