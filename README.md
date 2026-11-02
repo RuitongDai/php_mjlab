@@ -93,27 +93,13 @@ Train
 
 ```bash
 # Train one teacher; replace Locomotion with Low-Climb, High-Step, Low-Step, or High-Climb as needed.
-python -m scripts.train \
-  Unitree-G1-PHP-Locomotion-Teacher \
-  --env.scene.num-envs=2048 \
-  --agent.max-iterations=200000 \
-  --agent.save-interval=2000 \
-  --env.sim.mujoco.ccd-iterations=500 \
-  --agent.logger=wandb \
-  --agent.wandb-project=php-teachers \
-  --agent.run-name=php_locomotion_gpu0
+python -m scripts.train Unitree-G1-PHP-Locomotion-Teacher --env.scene.num-envs=2048 --agent.save-interval=2000
 ```
 
 Play
 
 ```bash
-python -m scripts.play \
-  Unitree-G1-PHP-Locomotion-Teacher \
-  --checkpoint-file="logs/rsl_rl/g1_php_locomotion_teacher/model_20000.pt" \
-  --num-envs=1 \
-  --motion-id=11 \
-  --terrain-variant=0 \
-  --viewer=viser 
+python -m scripts.play Unitree-G1-PHP-Locomotion-Teacher --checkpoint-file="logs/rsl_rl/g1_php_locomotion_teacher/model_20000.pt" --num-envs=1 --motion-id=11 --terrain-variant=0 --viewer=viser 
 ```
 
 **Student**
