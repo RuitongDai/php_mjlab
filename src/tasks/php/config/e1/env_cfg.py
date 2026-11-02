@@ -27,6 +27,10 @@ from ...dataset import BUNDLES, DATA_ROOT
 # Keep E1 motions separate from the G1 bundles. Each skill retains the PHP
 # *_motion.npz / *_terrain.npy schema and can override dataset_dir via the CLI.
 E1_DATA_ROOT = DATA_ROOT.parent / "e1_motion"
+E1_BUNDLES = {
+    skill: name.replace("php-motions-", "e1-motions-", 1)
+    for skill, name in BUNDLES.items()
+}
 E1_ANCHOR_BODY = "torso_link"
 E1_BODY_NAMES = (
     "pelvis",
@@ -78,7 +82,7 @@ def e1_php_teacher_env_cfg(skill="High-Climb", play=False):
         )
     }
     cmd = mdp.PhpMotionCommandCfg(
-        dataset_dir=str(E1_DATA_ROOT / BUNDLES[skill]),
+        dataset_dir=str(E1_DATA_ROOT / E1_BUNDLES[skill]),
         anchor_body_name=E1_ANCHOR_BODY,
         body_names=E1_BODY_NAMES,
         resampling_time_range=(1e9, 1e9),

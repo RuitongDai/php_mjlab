@@ -1,6 +1,7 @@
 """Preview PHP motion/terrain pairs without a policy or physics simulation.
 
 Run: python -m scripts.view_php_motion
+Preview E1: python -m scripts.view_php_motion --robot e1
 Validate all pairs without opening a server: python -m scripts.view_php_motion --check
 """
 
@@ -16,8 +17,16 @@ import numpy as np
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_DATA = ROOT / "src/assets/motions/php_motion"
-ROBOT_XML = ROOT / "src/assets/robots/unitree_g1/xmls/g1_29dof_spherehand.xml"
+ROBOT_PRESETS = {
+    "g1": (
+        ROOT / "src/assets/motions/php_motion",
+        ROOT / "src/assets/robots/unitree_g1/xmls/g1_29dof_spherehand.xml",
+    ),
+    "e1": (
+        ROOT / "src/assets/motions/e1_motion",
+        ROOT / "src/assets/robots/E1_V3/xmls/e1.xml",
+    ),
+}
 
 
 @dataclass
@@ -32,6 +41,15 @@ def load_clip(path: Path, model: mujoco.MjModel) -> Clip:
     with np.load(path, allow_pickle=False) as data:
         fps = float(np.asarray(data["fps"]).item())
         names = data["joint_names"].tolist()
+        joint_indices = {name: i for i, name in enumerate(names)}
+        missing = [model.joint(i).name for i in range(model.njnt)
+                   if model.jnt_type[i] != mujoco.mjtJoint.mjJNT_FREE
+                   and model.joint(i).name not in joint_indices]
+        if missing:
+            raise ValueError(
+                f"Motion {path} is missing robot joints: {missing}. "
+                "Check --robot / --robot-xml against the motion dataset."
+            )
         body_names = data["body_names"].tolist()
         joints = data["joint_pos"]
         offset = joints.shape[1] - len(names)
@@ -45,7 +63,7 @@ def load_clip(path: Path, model: mujoco.MjModel) -> Clip:
             if model.jnt_type[joint_id] == mujoco.mjtJoint.mjJNT_FREE:
                 continue
             name = model.joint(joint_id).name
-            qpos[:, model.jnt_qposadr[joint_id]] = joints[:, names.index(name) + offset]
+            qpos[:, model.jnt_qposadr[joint_id]] = joints[:, joint_indices[name] + offset]
     if not np.isfinite(fps) or fps <= 0 or not np.isfinite(qpos).all():
         raise ValueError(f"Invalid motion values: {path}")
     norms = np.linalg.norm(qpos[:, 3:7], axis=1, keepdims=True)
@@ -68,17 +86,29 @@ def load_clip(path: Path, model: mujoco.MjModel) -> Clip:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--motion-file", type=Path, default=DEFAULT_DATA,
-                        help="One *_motion.npz file or a directory (searched recursively).")
+    parser.add_argument("--robot", choices=tuple(ROBOT_PRESETS), default="g1",
+                        help="Robot and default motion dataset (default: g1).")
+    parser.add_argument("--robot-xml", type=Path,
+                        help="Override the selected robot's MJCF file.")
+    parser.add_argument("--motion-file", type=Path,
+                        help="One *_motion.npz file or a directory (searched recursively); "
+                             "defaults to the selected robot's motion dataset.")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8081)
     parser.add_argument("--check", action="store_true", help="Validate all pairs and exit.")
     args = parser.parse_args()
-    source = args.motion_file.expanduser().resolve()
+    default_data, default_xml = ROBOT_PRESETS[args.robot]
+    source = (args.motion_file or default_data).expanduser().resolve()
+    robot_xml = (args.robot_xml or default_xml).expanduser().resolve()
+    if not source.exists():
+        parser.error(f"Motion path does not exist: {source}")
+    if not robot_xml.is_file():
+        parser.error(f"Robot XML does not exist: {robot_xml}")
     files = sorted(source.rglob("*_motion.npz")) if source.is_dir() else [source]
     if not files:
         parser.error(f"No *_motion.npz files found in {source}")
-    model = mujoco.MjModel.from_xml_path(str(ROBOT_XML))
+    model = mujoco.MjModel.from_xml_path(str(robot_xml))
+    print(f"Robot: {args.robot.upper()} ({model.nv - 6} DoF), XML: {robot_xml}", flush=True)
     data = mujoco.MjData(model)
     if args.check:
         frames = 0
@@ -112,7 +142,7 @@ def main() -> None:
                 f"/robot/{model.body(body_id).name}", merge_geoms(model, geoms))
             robot_handles.append((body_id, handle))
 
-    server.gui.add_markdown("**PHP 动作预览**\n\n显示参考动作及配套地形。")
+    server.gui.add_markdown(f"**{args.robot.upper()} PHP 动作预览**\n\n显示参考动作及配套地形。")
     selection = server.gui.add_dropdown("动作", options=tuple(labels), initial_value=initial)
     playing = server.gui.add_checkbox("播放", initial_value=True)
     speed = server.gui.add_slider("速度", min=0.1, max=2.0, step=0.1, initial_value=1.0)
