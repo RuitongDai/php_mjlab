@@ -101,6 +101,11 @@ python -m scripts.train E1-PHP-Low-Step-Teacher \
   --agent.load-checkpoint=model_10000.pt \
   --agent.max-iterations=10000 \
   --agent.save-interval=1000
+  
+NUM_ENVS=8192 \
+MAX_ITERATIONS=20000 \
+SAVE_INTERVAL=2000 \
+bash scripts/train_e1_teachers.sh --start-from High-Step
 ```
 
 Play
