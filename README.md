@@ -94,6 +94,13 @@ Train
 ```bash
 # Train one teacher; replace Locomotion with Low-Climb, High-Step, Low-Step, or High-Climb as needed.
 python -m scripts.train Unitree-G1-PHP-Locomotion-Teacher --env.scene.num-envs=2048 --agent.save-interval=2000
+python -m scripts.train E1-PHP-Low-Step-Teacher \
+  --env.scene.num-envs=4096 \
+  --agent.resume True \
+  --agent.load-run=2026-11-03_08-56-02 \
+  --agent.load-checkpoint=model_10000.pt \
+  --agent.max-iterations=10000 \
+  --agent.save-interval=1000
 ```
 
 Play
