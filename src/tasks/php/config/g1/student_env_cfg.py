@@ -51,8 +51,6 @@ def php_student_env_cfg(play=False):
         sampling_mode="sequential" if play else "balanced",
     )
     cfg.commands["motion"] = PhpStudentCommandCfg(**kwargs)
-    if all((DATA_ROOT / b).is_dir() for b in BUNDLES.values()):
-        cfg.commands["motion"].bind_scene_entities(cfg.scene)
     cfg.scene.num_envs = 1 if play else 256
     cfg.scene.entities["robot"].spec_fn = student_robot_spec
     teacher = cfg.observations.pop("actor")

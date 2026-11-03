@@ -55,10 +55,7 @@ def php_teacher_env_cfg(skill="High-Climb", play=False):
         velocity_range=velocity_range,
     )
     cfg.commands["motion"] = cmd
-    # Registration does not require every optional bundle to be installed.
-    # train/play rebind after CLI overrides, before scene construction.
-    if (DATA_ROOT / BUNDLES[skill]).is_dir():
-        cmd.bind_scene_entities(cfg.scene)
+    # 数据集绑定由训练和播放入口在创建环境前执行。
     scan = RayCastSensorCfg(
         name="terrain_scan",
         frame=ObjRef(type="body", name="torso_link", entity="robot"),
