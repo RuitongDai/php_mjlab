@@ -23,7 +23,7 @@ class PhpStudentCommand(PhpMotionCommand):
     def __init__(self, cfg, env):
         super().__init__(cfg, env)
         groups = []
-        for i, folder in enumerate(BUNDLES.values()):
+        for i, folder in enumerate(cfg.motion_bundles):
             groups.extend([i] * len(motion_paths(str(Path(cfg.dataset_dir) / folder))))
         self.clip_experts = torch.tensor(groups, device=self.device)
         if cfg.fixed_skill is not None and cfg.fixed_motion_id is not None:
@@ -85,16 +85,24 @@ class PhpStudentCommand(PhpMotionCommand):
 @dataclass(kw_only=True)
 class PhpStudentCommandCfg(PhpMotionCommandCfg):
     dataset_dir: str = str(DATA_ROOT)
+    # Skill order stays shared; robot-specific configurations supply folder/body names.
+    motion_bundles: tuple[str, ...] = tuple(BUNDLES.values())
+    end_effector_body_names: tuple[str, ...] = EE_NAMES
     require_velocity: bool = True
     fixed_skill: str | None = None
     sampling_mode: str = "balanced"
 
     def get_motion_paths(self):
+        if (
+            len(self.motion_bundles) != len(BUNDLES)
+            or len(set(self.motion_bundles)) != len(BUNDLES)
+        ):
+            raise ValueError("Supply five distinct motion bundles in BUNDLES skill order")
         if self.fixed_skill is not None and self.fixed_skill not in BUNDLES:
             raise ValueError(f"fixed_skill must be one of {tuple(BUNDLES)}")
         return tuple(
             p
-            for folder in BUNDLES.values()
+            for folder in self.motion_bundles
             for p in motion_paths(str(Path(self.dataset_dir) / folder))
         )
 
@@ -137,7 +145,10 @@ def tracking_failure(env, kind: str, threshold: float, relax: bool = False):
             env, SceneEntityCfg("robot"), "motion", threshold
         )
     if kind == "ee_body_pos":
-        return tracking.bad_motion_body_pos(env, "motion", threshold, EE_NAMES)
+        command = env.command_manager.get_term("motion")
+        return tracking.bad_motion_body_pos(
+            env, "motion", threshold, command.cfg.end_effector_body_names
+        )
     raise ValueError(kind)
 
 

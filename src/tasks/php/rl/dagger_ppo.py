@@ -304,7 +304,7 @@ class PhpDaggerPPO(PPO):
         if config.get("actor") or config.get("iteration"):
             if loaded_dict.get("php_version") != 2:
                 raise ValueError(
-                    "PHP Student now uses 11 command dimensions (104 proprio inputs). "
+                    "PHP Student now uses 11 command dimensions. "
                     "The old 15-command Student checkpoint cannot be loaded directly; "
                     "start a new Student run. Teacher checkpoints are unchanged."
                 )

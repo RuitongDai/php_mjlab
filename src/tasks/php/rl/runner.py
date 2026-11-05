@@ -16,6 +16,8 @@ class PhpStudentRunner(MjlabOnPolicyRunner):
             self.load_teachers(checkpoints)
 
     def load_teachers(self, checkpoints):
+        motion_cfg = self.env.unwrapped.cfg.commands["motion"]
+        bundles = dict(zip(BUNDLES, motion_cfg.motion_bundles, strict=True))
         if len(checkpoints) != 5:
             raise ValueError(
                 "Supply exactly five teacher checkpoints: " + ", ".join(BUNDLES)
@@ -31,7 +33,7 @@ class PhpStudentRunner(MjlabOnPolicyRunner):
                 folder = Path(metadata["commands"]["motion"]["dataset_dir"]).name
                 scale = metadata["actions"]["joint_pos"]["scale"]
                 if (
-                    folder != BUNDLES[skill]
+                    folder != bundles[skill]
                     or not isinstance(scale, str)
                     or float(scale) != 1.0
                 ):
@@ -81,24 +83,30 @@ class PhpStudentRunner(MjlabOnPolicyRunner):
             self.env.unwrapped.cfg.observations["student_depth"].terms["depth"].params
         )
         blur = depth_params.get("gaussian_blur", (3, 1.0))
+        joint_count = len(robot.joint_names)
+        camera_cfg = self.env.unwrapped.scene["depth_camera"].cfg
         metadata = {
             "format": "php-depth-student-v2",
             "expert_order": list(BUNDLES),
             "inputs": {
-                "obs": [1, 93 + VELOCITY_COMMAND_DIM],
+                "obs": [1, 6 + 3 * joint_count + VELOCITY_COMMAND_DIM],
                 "student_depth": [1, 1, 58, 87],
             },
             "proprio_order": [
                 "projected_gravity:3",
                 "base_ang_vel:3",
-                "joint_pos_rel:29",
-                "joint_vel_rel:29",
-                "last_action:29",
+                f"joint_pos_rel:{joint_count}",
+                f"joint_vel_rel:{joint_count}",
+                f"last_action:{joint_count}",
                 f"vel_cmd:{VELOCITY_COMMAND_DIM}",
             ],
             "velocity_command_encoding": "one_hot",
             "velocity_command_names": list(VELOCITY_COMMAND_NAMES),
             "depth": {
+                "camera_parent_body": camera_cfg.parent_body,
+                "camera_position": list(camera_cfg.pos),
+                "camera_quaternion_wxyz": list(camera_cfg.quat),
+                "vertical_fov_degrees": camera_cfg.fovy,
                 "raw_hw": [60, 106],
                 "crop_tblr": [2, 0, 4, 4],
                 "gaussian_blur": None

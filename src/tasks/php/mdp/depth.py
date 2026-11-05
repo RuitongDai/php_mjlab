@@ -21,18 +21,34 @@ def camera_quaternion(angles):
 
 
 @requires_model_fields("cam_pos", "cam_quat")
-def randomize_camera(env, env_ids, sensor_name="depth_camera"):
+def randomize_camera(
+    env,
+    env_ids,
+    sensor_name="depth_camera",
+    pos=(0.01, 0.01, 0.44),
+    angles=(1.0, 27.0, 1.0),
+    quat=None,
+):
     if env_ids is None:
         env_ids = torch.arange(env.num_envs, device=env.device)
     index = env.scene[sensor_name].camera_idx
     n = len(env_ids)
     env.sim.model.cam_pos[env_ids, index] = torch.tensor(
-        [0.01, 0.01, 0.44], device=env.device
+        pos, device=env.device
     ) + torch.empty(n, 3, device=env.device).uniform_(-0.025, 0.025)
-    angles = torch.tensor([1.0, 27.0, 1.0], device=env.device) + (
+    delta_angles = (
         torch.rand(n, 3, device=env.device) * 2 - 1
     ) * torch.tensor([2.5, 3.0, 2.5], device=env.device)
-    env.sim.model.cam_quat[env_ids, index] = camera_quaternion(angles)
+    if quat is None:
+        orientation = camera_quaternion(
+            torch.tensor(angles, device=env.device) + delta_angles
+        )
+    else:
+        delta_quat = quat_from_euler_xyz(*torch.deg2rad(delta_angles).unbind(-1))
+        orientation = quat_mul(
+            delta_quat, torch.tensor(quat, device=env.device).expand(n, -1)
+        )
+    env.sim.model.cam_quat[env_ids, index] = orientation
 
 
 class PhpDepthImage:
@@ -44,7 +60,10 @@ class PhpDepthImage:
         self.bias = torch.randn(env.num_envs, 1, 1, device=env.device) * 0.03
         self._gaussian_kernel = None
         self._gaussian_key = None
-        focal = 30 / math.tan(math.radians(FOVY) / 2)
+        camera = env.scene[cfg.params.get("sensor_name", "depth_camera")].cfg
+        if (camera.height, camera.width) != (60, 106):
+            raise ValueError("PHP depth preprocessing requires a 60 x 106 camera")
+        focal = 30 / math.tan(math.radians(camera.fovy) / 2)
         y = (torch.arange(60, device=env.device) + 0.5 - 30) / focal
         x = (torch.arange(106, device=env.device) + 0.5 - 53) / focal
         self.ray_to_z = torch.rsqrt(1 + y[:, None] ** 2 + x[None, :] ** 2)

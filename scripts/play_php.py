@@ -53,7 +53,7 @@ def configure_environment(task_id: str, cfg: PlayConfig):
     motion.fixed_variant_id = cfg.terrain_variant
     if cfg.php_skill is not None:
         if not hasattr(motion, "fixed_skill"):
-            raise ValueError("--php-skill requires Unitree-G1-PHP-Student")
+            raise ValueError("--php-skill requires a PHP Student task")
         motion.fixed_skill = cfg.php_skill
     motion.bind_scene_entities(env_cfg.scene)
     if cfg.no_terminations:
